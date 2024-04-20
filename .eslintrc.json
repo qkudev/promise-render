@@ -1,0 +1,22 @@
+{
+  "extends": ["airbnb-base", "airbnb-typescript/base", "prettier"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "ignorePatterns": [".eslintrc.js", "jest.config.js", "jest.setup.js"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prefer-regex-literals": 0,
+    "max-classes-per-file": 0,
+    "no-plusplus": 0,
+    "generator-star-spacing": 0,
+    "no-restricted-exports": 0,
+    "no-restricted-syntax": 0,
+    "no-param-reassign": 0,
+    "no-underscore-dangle": 0,
+    "no-continue": 0,
+    "no-await-in-loop": 0,
+    "import/no-cycle": 0,
+    "no-bitwise": 0
+  }
+}
