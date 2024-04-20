@@ -1,36 +1,42 @@
 import React, { FC, FormEventHandler, useRef } from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AsyncComponentProps } from '../types';
-import { renderPromise } from '../render-promise';
+import { promiseRender } from '../promise-render';
 import '@testing-library/jest-dom';
 
 describe('renderPromise', () => {
-  const NumberForm: FC<AsyncComponentProps<number>> = ({ resolve }) => {
+  const NumberForm: FC<AsyncComponentProps<number>> = ({ resolve, reject }) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const onSubmit: FormEventHandler<HTMLFormElement> = e => {
       e.preventDefault();
 
-      const value = Number(inputRef.current?.value);
-      resolve(value);
+      resolve(Number(inputRef.current?.value));
+    };
+
+    const cancel = () => {
+      reject('Cancel');
     };
 
     return (
       <form onSubmit={onSubmit}>
         <input ref={inputRef} type="number" data-testid="number-input" />
         <button
-          type="button"
+          type="submit"
           data-testid="submit-btn"
           onClick={() => resolve(42)}
         >
           submit
         </button>
+        <button type="button" onClick={cancel} data-testid="cancel-btn">
+          cancel
+        </button>
       </form>
     );
   };
 
-  let [getNumber, AsyncNumberForm] = renderPromise(NumberForm);
+  let [getNumber, AsyncNumberForm] = promiseRender(NumberForm);
 
   const App = () => (
     <div>
@@ -41,7 +47,7 @@ describe('renderPromise', () => {
   let result = render(<App />);
 
   beforeEach(() => {
-    [getNumber, AsyncNumberForm] = renderPromise(NumberForm);
+    [getNumber, AsyncNumberForm] = promiseRender(NumberForm);
     result = render(<App />);
   });
 
@@ -49,8 +55,9 @@ describe('renderPromise', () => {
     result.unmount();
   });
 
-  const getInput = () => screen.findByTestId('number-input');
-  const getSubmit = () => screen.findByTestId('submit-btn');
+  const getInput = () => result.findByTestId('number-input');
+  const getSubmit = () => result.findByTestId('submit-btn');
+  const getCancel = () => result.findByTestId('cancel-btn');
 
   it('should render app', () => {
     expect(result.container).toBeDefined();
@@ -77,7 +84,7 @@ describe('renderPromise', () => {
       getNumber().then(fn);
     });
 
-    const input = await screen.findByTestId('number-input');
+    const input = await getInput();
     await userEvent.type(input, '42');
     await userEvent.click(await getSubmit());
 
@@ -88,10 +95,26 @@ describe('renderPromise', () => {
     act(() => {
       getNumber();
     });
-    const input = await screen.findByTestId('number-input');
+    const input = await getInput();
     await userEvent.type(input, '42');
     await userEvent.click(await getSubmit());
 
-    expect(() => getInput()).rejects.toThrow();
+    expect(result.container).toMatchInlineSnapshot(`
+      <div>
+        <div />
+      </div>
+    `);
+  });
+
+  it('should handle reject', async () => {
+    const onError = jest.fn();
+    act(() => {
+      getNumber().catch(onError);
+    });
+
+    const cancelBtn = await getCancel();
+    await userEvent.click(cancelBtn);
+
+    expect(onError).toHaveBeenCalledWith('Cancel');
   });
 });

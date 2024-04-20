@@ -1,3 +1,3 @@
-export { renderPromise } from './render-promise';
+export { promiseRender } from './promise-render';
 export { reactive } from './reactive';
 export * from './types';

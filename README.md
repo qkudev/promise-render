@@ -1,20 +1,20 @@
-# `render-promise`
+# `promise-render`
 
-`render-promise` is a lightweight JavaScript library that simplifies the process of rendering components asynchronously by wrapping them in a function that returns a Promise.
+`promise-render` is a lightweight JavaScript library that simplifies the process of rendering components asynchronously by wrapping them in a function that returns a Promise.
 
 ## Installation
 
-You can install render-promise via npm:
+You can install promise-render via npm:
 
 ```
-npm install @qkudev/render-promise
+npm install promise-render
 ```
 
 Usage
-To use `render-promise`, simply import it into your project:
+To use `promise-render`, simply import it into your project:
 
 ```
-import { renderPromise } from 'render-promise';
+import { promiseRender } from 'promise-render';
 ```
 
 Then, you can use the `renderPromise` function to render your component asynchronously:
@@ -51,7 +51,7 @@ This allows for easy rendering of components asynchronously, with the ability to
 ## Example
 
 ```
-import renderPromise from 'render-promise';
+import renderPromise from 'promise-render';
 
 const AreYourSure = ({ resolve }) => {
   const onAccept = () => {

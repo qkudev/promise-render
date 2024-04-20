@@ -31,39 +31,41 @@ import { reactive, useReactive } from './reactive';
  *  // ...
  * }
  */
-export function renderPromise<T>(
+export function promiseRender<T>(
   Component: ComponentType<AsyncComponentProps<T>>
 ): [() => Promise<T>, FC];
 
-export function renderPromise<T, Props extends {} | void = void>(
+export function promiseRender<T, Props extends {} | void = void>(
   Component: ComponentType<AsyncComponentProps<T> & Props>
 ): [(props: Props) => Promise<T>, FC];
 
-export function renderPromise<T, Props extends {} = {}>(
+export function promiseRender<T, Props extends {} = {}>(
   Component: ComponentType<AsyncComponentProps<T>>
 ) {
-  const $renders = reactive<ComponentProps<typeof Component>[]>([]);
+  const $props = reactive<ComponentProps<typeof Component> | null>(null);
+  const shift = () => {
+    $props(null);
+  };
 
   const call = (props: Props) => {
     const promise = new Promise<T>((resolve, reject) => {
-      const componentProps: ComponentProps<typeof Component> = {
+      $props({
         ...props,
         resolve,
         reject,
-      };
-
-      $renders(current => [...current, componentProps]);
+      });
     });
 
-    promise.finally(() => {
-      $renders(([, ...rest]) => rest);
+    return new Promise((resolve, reject) => {
+      promise
+        .then(resolve)
+        .catch(reject)
+        .finally(shift);
     });
-
-    return promise;
   };
 
   const Wrapped: FC = () => {
-    const [props] = useReactive($renders);
+    const props = useReactive($props);
     if (!props) {
       return null;
     }
@@ -71,8 +73,7 @@ export function renderPromise<T, Props extends {} = {}>(
     return createElement(Component, props);
   };
 
-  Wrapped.displayName = `RenderPromise(${Component.displayName ||
-    String(Component)})`;
+  Wrapped.displayName = `RenderPromise(${Component.displayName || Component})`;
 
   return [call, Wrapped] as const;
 }

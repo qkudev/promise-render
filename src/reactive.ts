@@ -62,7 +62,7 @@ export function reactive<T>(
 
 export const useReactive = <T>($value: Reactive<T>) => {
   const [value, setValue] = useState($value());
-  useEffect(() => $value.onChange(setValue), []);
+  useEffect(() => $value.onChange(setValue), [$value]);
 
   return value;
 };
